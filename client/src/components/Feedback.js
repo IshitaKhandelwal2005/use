@@ -278,19 +278,47 @@ const Feedback = () => {
         } else {
           // Fallback: Parse the analysis string
           try {
-            analysisData = typeof response.analysis === 'string'
-              ? JSON.parse(response.analysis)
-              : response.analysis;
+            // Handle both string and object formats
+            if (typeof response.analysis === 'string') {
+              // Try to parse the string as JSON
+              try {
+                analysisData = JSON.parse(response.analysis);
+              } catch (jsonError) {
+                // If parsing fails, try to extract JSON from the string
+                const jsonMatch = response.analysis.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                  analysisData = JSON.parse(jsonMatch[0]);
+                } else {
+                  throw new Error('No valid JSON found in analysis string');
+                }
+              }
+            } else {
+              analysisData = response.analysis;
+            }
             console.log('Parsed analysis data:', analysisData); // Debug log
           } catch (parseError) {
             console.error('Error parsing analysis data:', parseError);
-            analysisData = {};
+            // Provide a properly formatted fallback structure
+            analysisData = {
+              overallScore: 0,
+              comments: "Analysis temporarily unavailable",
+              suggestions: staticKeyStrengths,
+              areasForImprovement: staticAreasForImprovement,
+              performanceMetrics: {
+                salesEffectiveness: { score: 0, strengths: [] },
+                technicalProficiency: { score: 0, strengths: [] },
+                complianceEthics: { score: 0, strengths: [] },
+                detailedSuggestions: {
+                  conversationFlow: staticSuggestions.conversationFlow,
+                  productKnowledge: staticSuggestions.productKnowledge,
+                  communicationStyle: staticSuggestions.communicationStyle
+                }
+              }
+            };
           }
         }
 
         // Use backend feedback fields or fallback to static if missing
-
-        // Use score array if present for all chart numbers
         const scoreArr = Array.isArray(analysisData.score) && analysisData.score.length === 4
           ? analysisData.score
           : [
@@ -300,38 +328,52 @@ const Feedback = () => {
               analysisData.performanceMetrics?.complianceEthics?.score || 0
             ];
 
+        // Extract detailed suggestions from performanceMetrics or use fallback
+        const detailedSuggestions = analysisData.performanceMetrics?.detailedSuggestions || {
+          conversationFlow: staticSuggestions.conversationFlow,
+          productKnowledge: staticSuggestions.productKnowledge,
+          communicationStyle: staticSuggestions.communicationStyle
+        };
+
         const feedbackData = {
           overallScore: scoreArr[0],
-          comments: analysisData.comments || '',
-          suggestions: Array.isArray(analysisData.suggestions) && analysisData.suggestions.length > 0 ? analysisData.suggestions : staticKeyStrengths,
-          areasForImprovement: Array.isArray(analysisData.areasForImprovement) && analysisData.areasForImprovement.length > 0 ? analysisData.areasForImprovement : staticAreasForImprovement,
+          comments: analysisData.comments || 'No comments available',
+          suggestions: Array.isArray(analysisData.suggestions) && analysisData.suggestions.length > 0 
+            ? analysisData.suggestions 
+            : staticKeyStrengths,
+          areasForImprovement: Array.isArray(analysisData.areasForImprovement) && analysisData.areasForImprovement.length > 0 
+            ? analysisData.areasForImprovement 
+            : staticAreasForImprovement,
+          detailedSuggestions: {
+            conversationFlow: Array.isArray(detailedSuggestions.conversationFlow) 
+              ? detailedSuggestions.conversationFlow 
+              : staticSuggestions.conversationFlow,
+            productKnowledge: Array.isArray(detailedSuggestions.productKnowledge) 
+              ? detailedSuggestions.productKnowledge 
+              : staticSuggestions.productKnowledge,
+            communicationStyle: Array.isArray(detailedSuggestions.communicationStyle) 
+              ? detailedSuggestions.communicationStyle 
+              : staticSuggestions.communicationStyle
+          },
           performanceMetrics: {
             salesEffectiveness: {
               score: scoreArr[1],
-              strengths: analysisData.performanceMetrics?.salesEffectiveness?.strengths || []
+              strengths: Array.isArray(analysisData.performanceMetrics?.salesEffectiveness?.strengths) 
+                ? analysisData.performanceMetrics.salesEffectiveness.strengths 
+                : []
             },
             technicalProficiency: {
               score: scoreArr[2],
-              strengths: analysisData.performanceMetrics?.technicalProficiency?.strengths || []
+              strengths: Array.isArray(analysisData.performanceMetrics?.technicalProficiency?.strengths)
+                ? analysisData.performanceMetrics.technicalProficiency.strengths
+                : []
             },
             complianceEthics: {
               score: scoreArr[3],
-              strengths: analysisData.performanceMetrics?.complianceEthics?.strengths || []
+              strengths: Array.isArray(analysisData.performanceMetrics?.complianceEthics?.strengths)
+                ? analysisData.performanceMetrics.complianceEthics.strengths
+                : []
             }
-          },
-          detailedSuggestions: {
-            conversationFlow:
-              Array.isArray(analysisData.detailedSuggestions?.conversationFlow) && analysisData.detailedSuggestions.conversationFlow.length > 0
-                ? analysisData.detailedSuggestions.conversationFlow
-                : staticSuggestions.conversationFlow,
-            productKnowledge:
-              Array.isArray(analysisData.detailedSuggestions?.productKnowledge) && analysisData.detailedSuggestions.productKnowledge.length > 0
-                ? analysisData.detailedSuggestions.productKnowledge
-                : staticSuggestions.productKnowledge,
-            communicationStyle:
-              Array.isArray(analysisData.detailedSuggestions?.communicationStyle) && analysisData.detailedSuggestions.communicationStyle.length > 0
-                ? analysisData.detailedSuggestions.communicationStyle
-                : staticSuggestions.communicationStyle
           }
         };
 
@@ -531,39 +573,33 @@ const Feedback = () => {
             <CategoryTitle color="#3B82F6">
               <FaComments /> Conversation Flow
             </CategoryTitle>
-            {Array.isArray(feedback.detailedSuggestions?.conversationFlow)
-              ? feedback.detailedSuggestions.conversationFlow.map((suggestion, index) => (
-                  <SuggestionText key={index} color="#3B82F6">
-                    {suggestion}
-                  </SuggestionText>
-                ))
-              : null}
+            {feedback.detailedSuggestions?.conversationFlow?.map((suggestion, index) => (
+              <SuggestionText key={index} color="#3B82F6">
+                {suggestion}
+              </SuggestionText>
+            ))}
           </SuggestionCategory>
 
           <SuggestionCategory>
             <CategoryTitle color="#8B5CF6">
               <FaBook /> Product Knowledge
             </CategoryTitle>
-            {Array.isArray(feedback.detailedSuggestions?.productKnowledge)
-              ? feedback.detailedSuggestions.productKnowledge.map((suggestion, index) => (
-                  <SuggestionText key={index} color="#8B5CF6">
-                    {suggestion}
-                  </SuggestionText>
-                ))
-              : null}
+            {feedback.detailedSuggestions?.productKnowledge?.map((suggestion, index) => (
+              <SuggestionText key={index} color="#8B5CF6">
+                {suggestion}
+              </SuggestionText>
+            ))}
           </SuggestionCategory>
 
           <SuggestionCategory>
             <CategoryTitle color="#10B981">
               <FaUserFriends /> Communication Style
             </CategoryTitle>
-            {Array.isArray(feedback.detailedSuggestions?.communicationStyle)
-              ? feedback.detailedSuggestions.communicationStyle.map((suggestion, index) => (
-                  <SuggestionText key={index} color="#10B981">
-                    {suggestion}
-                  </SuggestionText>
-                ))
-              : null}
+            {feedback.detailedSuggestions?.communicationStyle?.map((suggestion, index) => (
+              <SuggestionText key={index} color="#10B981">
+                {suggestion}
+              </SuggestionText>
+            ))}
           </SuggestionCategory>
         </SuggestionBox>
       </SuggestionSection>
