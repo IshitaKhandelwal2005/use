@@ -189,6 +189,10 @@ exports.sendMessage = async (req, res) => {
     if (!conversation) {
       return res.status(404).json({ message: 'Conversation not found' });
     }
+
+    if (conversation.isCompleted) {
+      return res.status(400).json({ message: 'Conversation has already ended' });
+    }
     
     // Add agent message
     const agentMessage = {
