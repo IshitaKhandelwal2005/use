@@ -1,0 +1,25 @@
+.top-right-icon-container {
+  position: fixed;
+  top: 20px; /* Adjust as needed */
+  right: 20px; /* Adjust as needed */
+  display: flex;
+  align-items: center;
+  background-color: #ffffff; /* Optional: background for better visibility */
+  padding: 8px 12px;
+  border-radius: 20px; /* Rounded corners */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* Subtle shadow */
+  z-index: 1000; /* Ensure it's above other content */
+  cursor: default; /* Or pointer if it's clickable */
+}
+
+.leaf-icon {
+  color: #28a745; /* Green color for the leaf */
+  font-size: 1.5em; /* Adjust size as needed */
+  margin-right: 8px;
+}
+
+.icon-count {
+  font-size: 1em; /* Adjust size as needed */
+  font-weight: bold;
+  color: #333333;
+} 

@@ -1,0 +1,162 @@
+.video-gallery-container {
+  padding: 10px 0px; /* Add some top/bottom padding within section */
+  width: 100%; /* Take full width of its parent */
+  margin: 0 auto;
+}
+
+/* Removed h2 styling, assuming page section title will be used */
+
+.video-scroller {
+  display: flex;
+  overflow-x: auto;
+  gap: 25px; /* Increased gap */
+  padding: 15px 5px; /* Increased padding for cards */
+  
+  /* Hide scrollbar for Firefox */
+  scrollbar-width: none;
+  
+  /* Hide scrollbar for IE/Edge (older versions, might not be needed) */
+  -ms-overflow-style: none; 
+}
+
+/* Hide scrollbar for Chrome, Safari, and newer Edge */
+.video-scroller::-webkit-scrollbar {
+  display: none; /* You can also use width: 0; height: 0; */
+}
+
+.video-scroller::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.video-scroller::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.video-scroller::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.video-card {
+  flex: 0 0 320px; /* Increased card width */
+  background: #fdfdff; /* Slightly off-white for depth */
+  border-radius: 10px; /* More rounded */
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #e9e9f0; /* Subtle border */
+}
+
+.video-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.video-thumbnail {
+  position: relative;
+  height: 180px; /* Increased thumbnail height */
+  overflow: hidden;
+  background-color: #e0e0e0;
+}
+
+.video-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease; /* Add subtle zoom on card hover */
+}
+
+.video-card:hover .video-thumbnail img {
+  transform: scale(1.05); /* Zoom image slightly on card hover */
+}
+
+.play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.65);
+  width: 55px; /* Larger play icon */
+  height: 55px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px; /* Larger icon character */
+  opacity: 0;
+  transition: opacity 0.3s ease, background-color 0.3s ease;
+}
+
+.video-card:hover .play-icon {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.75); /* Darken slightly on hover */
+}
+
+.video-info {
+  padding: 15px;
+}
+
+.video-info h3 {
+  margin: 0 0 10px 0;
+  color: #2c3e50; /* Darker title color */
+  font-size: 1.1em; /* Larger title */
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.video-info p {
+  margin: 0;
+  color: #555;
+  font-size: 0.95em; /* Larger description */
+  line-height: 1.5;
+  height: 4.5em; /* Approx 3 lines, adjust based on new font size */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3; 
+  -webkit-box-orient: vertical;
+}
+
+.no-videos-message {
+  text-align: center;
+  color: #777;
+  padding: 30px 20px; /* More padding */
+  font-style: italic;
+  font-size: 1.1em; /* Slightly larger */
+}
+
+@media (max-width: 768px) {
+  .video-card {
+    flex: 0 0 260px; 
+  }
+  
+  .video-thumbnail {
+    height: 145px;
+  }
+  .video-info h3 {
+    font-size: 1em;
+  }
+  .video-info p {
+    font-size: 0.9em;
+    height: 4.2em; 
+    -webkit-line-clamp: 3;
+  }
+  .play-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) { /* Extra breakpoint for smaller mobile */
+  .video-card {
+    flex: 0 0 220px;
+  }
+  .video-thumbnail {
+    height: 120px;
+  }
+} 

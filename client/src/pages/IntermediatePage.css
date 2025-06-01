@@ -1,0 +1,466 @@
+.intermediate-page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 30px 20px; /* Increased overall page padding */
+  position: relative; /* Needed for absolute positioning of children if any, or general layout control */
+}
+
+.page-header-info {
+  width: 100%;
+  max-width: 1100px; /* Consistent max-width with sections */
+  display: flex;
+  justify-content: space-between; /* Pushes title to left, icon to right */
+  align-items: center; /* Vertically align items if they have different heights */
+  margin-bottom: 25px; /* Increased space */
+  padding: 0 10px; /* Slight horizontal padding */
+  box-sizing: border-box; /* Ensure padding doesn't add to width */
+}
+
+.product-title-top-left {
+  font-size: clamp(1.2rem, 3vw, 2.2em); /* Responsive title */
+  font-weight: 700;
+  color: #2c3e50;
+  /* No specific positioning needed if it's the first child of a flex container 
+     that pushes the other child (TopRightIcon) to the other side */
+}
+
+/* Adjust TopRightIcon if it was previously positioned absolutely within the page container 
+   Now it is part of a flex row, so its direct position:fixed might conflict or be redundant.
+   If TopRightIcon is already position:fixed with its own top/right, it might not need changes here.
+   Assuming TopRightIcon is self-positioning via its own CSS as fixed.
+*/
+
+.page-section {
+  width: 100%; /* Sections take full width of container */
+  max-width: 1100px; /* Increased max-width for a wider feel */
+  padding: 30px 35px; /* Increased internal padding */
+  background-color: #ffffff;
+  border-radius: 12px; /* Slightly larger radius */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); /* Softer, more modern shadow */
+  margin-bottom: 30px; /* Increased space between sections */
+  /* text-align: center; Removed to allow flex children to align */
+}
+
+.page-section h2 {
+  text-align: center;
+  color: #1E3A8A;
+  margin-bottom: 25px;
+  font-size: clamp(1.3rem, 4vw, 2.2em); /* Responsive section heading */
+  font-weight: 700;
+  width: 100%;
+}
+
+.page-section:last-child {
+  margin-bottom: 0;
+}
+
+.page-section p, .learning-section p, .training-description-text {
+  font-size: clamp(1rem, 2vw, 1.15em);
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.training-content-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-around; /* Better distribution */
+  margin-top: 15px;
+  width: 100%;
+}
+
+.chart-container-intermediate {
+  position: relative;
+  width: 200px; /* Larger chart */
+  height: 200px; /* Larger chart */
+  margin-right: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Prevent chart from shrinking */
+}
+
+.chart-label-intermediate {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5em; /* Larger percentage text */
+  font-weight: 700; /* Bolder */
+  line-height: 1;
+  text-align: center;
+}
+
+.chart-sub-label {
+  font-size: 1.1em; /* Larger sub-label */
+  color: #4a4a4a;
+  margin-top: 10px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.training-details-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Align items to the start (left) */
+  flex-grow: 1;
+  max-width: 500px; /* Max width for text content for readability */
+}
+
+.user-level-button {
+  margin-bottom: 15px;
+  background-color: #f0f4f8; /* Lighter, more subtle background */
+  color: #4a69bd; /* Softer text color */
+  border: 1px solid #d0d9e8;
+  font-weight: 500;
+}
+
+.user-level-button:hover {
+  background-color: #e6eaf0;
+  color: #4a69bd;
+  transform: none; /* No hover transform for this informational button */
+}
+
+.start-training-button {
+  align-self: flex-start; /* Align to its own start if text-align isn't enough */
+}
+
+.action-button, .ai-training-bot-button {
+  padding: 12px 28px;
+  font-size: clamp(1rem, 2vw, 1.1em);
+  color: white;
+  background-color: #2B52DD;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-align: center;
+  font-weight: 600;
+}
+
+.action-button:hover {
+  background-color: #1E3BB7; /* Darker on hover */
+  transform: translateY(-2px);
+}
+
+/* Specific styling for the training button if needed */
+.start-training-button {
+  /* Add any specific styles for the start training button here */
+}
+
+/* Styles for the Training Section content */
+.training-content-wrapper {
+  display: flex;
+  align-items: center; /* Vertically center items */
+  justify-content: space-between; /* Space out chart and actions */
+  margin-top: 20px;
+  width: 100%;
+}
+
+.chart-container-intermediate {
+  position: relative; /* For positioning the label */
+  width: 150px; /* Adjust size as needed */
+  height: 150px; /* Adjust size as needed */
+  margin-right: 30px; /* Space between chart and text/button */
+  display: flex; /* For centering sub-label */
+  flex-direction: column; /* For centering sub-label */
+  align-items: center; /* For centering sub-label */
+  justify-content: center; /* For centering sub-label */
+}
+
+.chart-label-intermediate {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.8em; /* Adjust as needed */
+  font-weight: bold;
+  line-height: 1; /* This should help center the text vertically */
+  text-align: center; /* Ensures text is centered if it were to wrap */
+}
+
+.chart-sub-label {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 8px; /* Reduced margin-top significantly */
+  text-align: center; /* Ensure it's centered if text wraps */
+}
+.learning-section{
+  background-color: #f0f4f8;
+}
+.training-actions {
+  flex-grow: 1; /* Allow this section to take remaining space */
+  text-align: left; /* Align text to the left */
+}
+
+.training-actions p {
+  margin-bottom: 15px; /* Space between paragraph and button */
+}
+
+/* Learning Section specific styles */
+/* .learning-section-header, .product-title-display, .youtube-link-form styles removed */
+
+.learning-section p {
+  font-size: 1.15em; /* Match training description text */
+  color: #555;
+  line-height: 1.6;
+  text-align: center; /* Center the placeholder text if gallery is empty */
+  margin-bottom: 20px;
+}
+
+/* Styles for the NEW Training Section based on the image */
+.training-section-new {
+  background-color: #f0f4f8;
+  padding: 25px;
+  border-radius: 15px;
+}
+
+.training-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 10px; /* Add some padding if title is too close to edge */
+}
+
+.training-title-main {
+  font-size: clamp(1.5rem, 6vw, 2.8em); /* Responsive main title */
+  font-weight: 900;
+  color: #1E293B;
+  margin: 0;
+}
+
+.training-level-button {
+  background-color: #FFFFFF;
+  color: #1E3A8A; /* Dark blue text */
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px; /* Pill shape */
+  font-weight: 700;
+  font-size: 1.1em;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.training-content-new {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Align items to the top */
+  gap: 25px; /* Space between the three main columns */
+}
+
+/* Left Part: Chart Area */
+.training-chart-area {
+  flex: 1 1 30%; /* Adjust flex-basis as needed */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f0f4f8; /* Match page background */
+  padding: 20px;
+  border-radius: 10px;
+  min-height: 250px; /* Ensure it has some height */
+}
+
+.chart-wrapper-new {
+  width: 180px; /* Adjust as needed */
+  height: 180px;
+  position: relative; /* For the X if we were to add it with CSS */
+  margin-bottom: 15px;
+  /* The X in the image seems to be part of the chart image itself or a static overlay.
+     Replicating it perfectly with just CSS on a live chart is complex.
+     We are omitting the X for now, focusing on the donut chart itself. */
+}
+
+.chart-analysis-text {
+  font-size: 0.9em;
+  color: #4A5568; /* Medium grey text */
+  font-weight: 600;
+  text-align: center;
+  margin-top: auto; /* Pushes text to bottom if chart area is taller */
+}
+
+/* Middle Part: Strengths and Weaknesses */
+.training-strengths-weaknesses {
+  flex: 1 1 40%; /* Adjust flex-basis */
+  padding: 20px;
+  background-color: #f0f4f8;
+  border-radius: 8px;
+}
+
+.training-strengths-weaknesses h4 {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: #2D3748; /* Darker grey text */
+  margin-bottom: 10px;
+}
+
+.training-strengths-weaknesses ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.training-strengths-weaknesses ul li {
+  font-size: 0.95em;
+  color: #4A5568;
+  margin-bottom: 8px;
+  position: relative;
+  padding-left: 20px; /* Space for custom bullet */
+}
+
+.training-strengths-weaknesses ul li::before {
+  content: '\2022'; /* Unicode bullet */
+  color: #2D3748; /* Bullet color */
+  font-weight: bold;
+  display: inline-block; 
+  width: 1em;
+  margin-left: -1.2em; /* Adjust to align with text */
+  position: absolute;
+  left: 5px; /* Position custom bullet */
+  top: 0;
+}
+.learning-section h2{
+  font-size: 2.8em; /* Large title */
+  font-weight: 900; /* Extra bold */
+  color: #1E293B; /* Dark slate color */
+  margin: 0; 
+  text-align: left;
+}
+/* Right Part: AI Bot Area */
+.training-ai-bot-area {
+  padding: 30px 25px;
+  background-color: #7fa5ce;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  min-height: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.training-ai-bot-area::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.training-ai-bot-area:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ai-bot-area-title {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: left;
+  width: 100%;
+  letter-spacing: 0.5px;
+  margin: 0 0 25px 0;
+  line-height: 1.3;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ai-training-bot-button:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ai-training-bot-button:active {
+  transform: translateY(0);
+}
+
+/* Remove or adjust old training section styles that might conflict */
+.training-section h2 { /* Old h2 from previous design */
+  display: none; /* Hide if not used in new design */
+}
+
+.training-content-wrapper, 
+.chart-container-intermediate, 
+.chart-label-intermediate, 
+.chart-sub-label, 
+.training-details-column,
+.user-level-button, /* Old user level button */
+.start-training-button,
+.training-actions {
+  /* These are from the old layout. If not reused, they can be removed 
+     or display: none; if there's a chance of conflict. 
+     For now, let's assume they are superseded by new classes. */
+ display: none; /* Hiding old specific layout classes to prevent conflict */
+}
+
+.learning-section p {
+  font-size: 1.15em; 
+  color: #555;
+  line-height: 1.6;
+  text-align: center; 
+  margin-bottom: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .training-content-new {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .training-chart-area, 
+  .training-strengths-weaknesses,
+  .training-ai-bot-area {
+    flex-basis: auto;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .training-title-main {
+    font-size: clamp(1.2rem, 8vw, 2.2em);
+  }
+}
+
+@media (max-width: 768px) {
+  .page-header-info {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    padding: 0 5px;
+  }
+  .product-title-top-left {
+    font-size: clamp(1rem, 5vw, 1.5em);
+  }
+  .page-section {
+    padding: 20px 10px;
+  }
+  .training-section-new {
+    padding: 15px;
+  }
+  .training-header {
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
+  }
+  .training-title-main {
+    font-size: clamp(1rem, 10vw, 2em);
+    text-align: center;
+  }
+  .action-button, .ai-training-bot-button {
+    font-size: clamp(0.95rem, 3vw, 1em);
+    padding: 10px 18px;
+  }
+  .learning-section p {
+    font-size: clamp(0.95rem, 3vw, 1.05em);
+  }
+} 
