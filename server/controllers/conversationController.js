@@ -321,23 +321,99 @@ exports.analyzeConversation = async (req, res) => {
       .map(msg => `${msg.sender === 'agent' ? 'Loan Agent' : 'Customer'}: ${msg.content}`)
       .join('\n\n');
 
-    const analysisPrompt = `You are an expert sales coach specializing in banking and financial services. Analyze the following *loan agent training conversation* and provide your feedback strictly in the JSON format below.
+    const analysisPrompt = `You are an expert sales coach specializing in banking and financial services. Analyze the following loan agent training conversation and provide your feedback strictly in the JSON format below.
 
-Use this scoring guide:
-- 90–100 = Excellent
-- 75–89 = Good
-- 60–74 = Average
-- 40–59 = Below Average
-- 0–39 = Poor
+Use the following scoring guide for the final overall rating:
 
-Mark each metric (Sales Effectiveness, Technical Proficiency, Compliance & Ethics) using the following criteria:
-- Sales Effectiveness = [25% Needs Analysis, 25% Product Match, 25% Objection Handling, 25% Deal Progress]
-- Technical Proficiency = [40% Terminology Accuracy, 30% Process Accuracy, 30% System Navigation (if any)]
-- Compliance & Ethics = [40% T&C Disclosure, 30% Honesty/Fair Selling, 30% Data Sensitivity]
+90–100 = Excellent
 
-If a section is not addressed in the conversation, indicate "Not enough data" in that field.
+75–89 = Good
 
-Return only a valid JSON object in this format:
+60–74 = Average
+
+40–59 = Below Average
+
+0–39 = Poor
+
+🔹 Scoring Formula:
+overallScore = (salesEffectiveness.score + technicalProficiency.score + complianceEthics.score) / 3
+
+🔹 Marking Scheme:
+1. Sales Effectiveness
+Weight: 100 points, equally divided across four criteria:
+
+Needs Analysis (25%)
+
+Identifies customer’s goals, concerns, and loan purpose
+
+Asks open-ended, diagnostic questions
+
+Product Match (25%)
+
+Recommends a suitable loan product based on needs
+
+Explains key features/benefits relevant to customer
+
+Objection Handling (25%)
+
+Acknowledges and addresses concerns confidently
+
+Avoids defensive or dismissive responses
+
+Deal Progress (25%)
+
+Attempts to move the customer closer to a decision
+
+Clearly explains next steps in the process
+
+⚠️ If any of these four elements are not addressed, assign only 5–10% of that sub-score.
+
+2. Technical Proficiency
+Weight: 100 points, distributed as follows:
+
+Terminology Accuracy (40%)
+
+Uses correct financial/banking terms (e.g., EMI, interest rate, CIBIL)
+
+Avoids inaccurate or misleading statements
+
+Process Accuracy (30%)
+
+Correctly explains documentation, approval, and disbursal process
+
+Mentions timelines, eligibility criteria, etc.
+
+System Navigation (30%) (if applicable)
+
+Shows knowledge of CRM/software tools
+
+Refers to how to access customer status/info accurately
+
+⚠️ If any elements are missing or vague, award partial credit (5–10%).
+
+3. Compliance & Ethics
+Weight: 100 points, distributed as follows:
+
+T&C Disclosure (40%)
+
+Clearly explains repayment terms, interest rate, fees, penalties
+
+Honesty/Fair Selling (30%)
+
+Does not exaggerate benefits or hide limitations
+
+Maintains a transparent, trust-building tone
+
+Data Sensitivity (30%)
+
+Avoids asking for sensitive info without need/context
+
+Demonstrates understanding of privacy principles
+
+⚠️ Missing disclosures or ethical oversights should be penalized accordingly.
+
+🔹 Output Format:
+Return only a valid JSON object in the exact format below:
 
 {
   "overallScore": [0-100, integer],
@@ -364,22 +440,25 @@ Return only a valid JSON object in this format:
     }
   }
 }
-
+🔹 Input:
 CONVERSATION:
 ${conversationText}
 
 CONTEXT:
-- Scenario: ${conversation.scenario}
+
+Scenario: ${conversation.scenario}
 
 Instructions:
-- Carefully review the conversation and context.
-- Fill in each field in the JSON with specific, relevant, and concise content.
-- "overallScore" is a number from 0-100 reflecting the agent's overall performance.
-- "comments" is a 1-2 sentence summary of the agent's performance.
-- "suggestions" is a list of actionable, one-line suggestions for improvement.
-- "areasForImprovement" is a list of specific shortcomings or areas to work on.
-- For each section in "performanceMetrics", provide a score (0-100) and a list of strengths demonstrated in that area.
-- Respond ONLY with a valid JSON object in the format above. Do not include any extra text, explanation, or commentary.`;
+
+Carefully review the conversation and context.
+
+Score each metric and sub-metric using the marking scheme.
+
+Penalize missing or unclear responses with 5–10% where appropriate.
+
+Calculate overallScore as the average of the 3 category scores.
+
+Return only the valid JSON object. No extra explanation or commentary.`;
 
     try {
       const response = await groq.chat.completions.create({
