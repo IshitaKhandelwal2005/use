@@ -3,86 +3,36 @@ const Conversation = require('../models/Conversation');
 const config = require('../config/groq'); // Use Groq config
 
 // Helper function to create system prompt for loan agent training
-const createSystemPrompt = (scenario) => {
-  const basePrompt = ` You are simulating a real Indian customer who speaks in casual Hinglish—Hindi in English script mixed naturally with simple English. This is a roleplay simulation where a loan agent (the human user) talks to you about financial products like loans, savings accounts, or insurance.
+const createSystemPrompt = (scenario, difficulty, additionalInfo) => {
+  let promptTemplate;
 
-CRITICAL RULE:
-You are ONLY the CUSTOMER. Never behave like an agent, banker, or advisor.
+  if (difficulty === 'easy') {
+    promptTemplate = process.env.PROMPT1;
+  } else {
+    promptTemplate = process.env.PROMPT2;
+  } 
 
-LANGUAGE STYLE:
+  if (!promptTemplate) {
+    console.error(`Prompt not found for difficulty: ${difficulty}. PROMPT1 or PROMPT2 might be missing in .env. Scenario was: ${scenario}`);
+    return "You are a customer. Please respond naturally."; // Basic fallback
+  }
 
-Use simple, everyday Hinglish (Hindi words in Roman script mixed with basic English).
-
-Examples:
-
-"Mujhe loan lena hai lekin process samajh nahi aa raha."
-
-"Bhai, rate of interest thoda zyada nahi hai kya?"
-
-"Yeh EMI kaise kaam karta hai? Mujhe thoda samjha do."
-
-ROLE: CUSTOMER
-
-You are curious and sometimes confused about the banking service.
-
-Ask genuine questions about the offered product.
-
-Express doubts, hesitations, or concerns naturally.
-
-Keep your replies honest and to the point, as if chatting on WhatsApp.
-
-NEVER DO THIS:
-
-Do not give advice or recommendations.
-
-Do not ask professional, agent-style questions or try to lead the conversation.
-
-Do not switch to pure English or pure Hindi; mix both naturally.
-
-Do not include any internal or "think" process. Respond in short answers of 2–4 lines only.
-
-OBJECTIVE:
-
-React to the agent's messages in a natural, casual manner.
-
-Ask follow-up questions, seek clarity on interest rates, documents, eligibility, EMI, etc.
-
-Respond like a regular customer chatting in person.
-
-SCENARIO:
-${scenario}
-
-SIMPLE REMINDER:
-
-The agent talks, and you reply casually in Hinglish.
-
-If you are confused, ask a quick, clear question.
-
-If something seems off, express your doubts.
-
-Act like a real customer in a short, natural conversation.
-
-BEGIN CONVERSATION:
-
-`;
-
-  // Add scenario-specific context
-  const scenarioContext = {
-    'credit-card': 'You are interested in getting a credit card but have questions about fees, limits, and benefits. You need the agent to explain options to you.',
-    'personal-loan': 'You need a personal loan for a specific purpose and want to understand terms and eligibility. You have concerns about approval.',
-    'business-loan': 'You are a business owner looking for financing options. You need guidance on what\'s available and what you qualify for.',
-    'savings': 'You want to open a savings account or learn about investment options. You need the agent to explain different account types.',
-    'demat': 'You are interested in investing in stocks and need a demat account. You\'re new to investing and need explanations.',
-    'investment': 'You have money to invest and want guidance on investment products. You need the agent to explain your options.',
-    'home-loan': 'You are planning to buy a house and need information about home loans. You have questions about eligibility and process.',
-    'insurance': 'You are interested in insurance products for protection or investment. You need explanations about different policies.'
-  };
-
-  const contextNote = scenarioContext[scenario]
-    ? `\n\nSCENARIO CONTEXT: ${scenarioContext[scenario]}`
-    : '';
+  let finalPrompt = promptTemplate;
+  if (scenario) {
+    finalPrompt = finalPrompt.replace(/{scenario}/g, scenario); // Use global replace for multiple occurrences
+  }
+  if (additionalInfo) {
+    finalPrompt = finalPrompt.replace(/{additionalInfo}/g, additionalInfo);
+  } else {
+    // If additionalInfo is not provided, you might want to replace the placeholder with an empty string or a default message
+    finalPrompt = finalPrompt.replace(/{additionalInfo}/g, 'No additional context provided.');
+  }
   
-  return `${basePrompt}${contextNote}\n\nREMINDER: You are the CUSTOMER seeking help, not the agent providing it.`;
+  // Fallback for placeholders if not replaced (e.g. if scenario/additionalInfo were null and not caught above)
+  finalPrompt = finalPrompt.replace(/{scenario}/g, 'general scenario');
+  finalPrompt = finalPrompt.replace(/{additionalInfo}/g, 'No additional context.');
+
+  return finalPrompt;
 };
 
 // Helper function to get initial customer message
@@ -114,7 +64,7 @@ exports.startConversation = async (req, res) => {
       body: req.body
     });
 
-    const { scenario } = req.body;
+    const { scenario, difficultyLevel, additionalInfo } = req.body;
     
     // Validate scenario
     const allowedScenarios = [
@@ -179,7 +129,7 @@ exports.startConversation = async (req, res) => {
 // @access  Private
 exports.sendMessage = async (req, res) => {
   try {
-    const { content } = req.body;
+    const { content, difficulty, additionalInfo } = req.body;
     
     if (!content || typeof content !== 'string' || content.trim() === '') {
       return res.status(400).json({ message: 'Message content is required' });
@@ -189,7 +139,7 @@ exports.sendMessage = async (req, res) => {
     if (!conversation) {
       return res.status(404).json({ message: 'Conversation not found' });
     }
-
+    
     if (conversation.isCompleted) {
       return res.status(400).json({ message: 'Conversation has already ended' });
     }
@@ -204,7 +154,7 @@ exports.sendMessage = async (req, res) => {
     conversation.messages.push(agentMessage);
     
     // Prepare messages for Groq
-    const systemPrompt = createSystemPrompt(conversation.scenario);
+    const systemPrompt = createSystemPrompt(conversation.scenario, difficulty, additionalInfo);
     const messagesForLLM = [
       { role: 'system', content: systemPrompt }
     ];

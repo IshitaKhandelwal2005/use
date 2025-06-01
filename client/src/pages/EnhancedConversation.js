@@ -52,6 +52,9 @@ const EnhancedConversation = () => {
   const { user } = useAuth();
   const chatContainerRef = useRef(null);
 
+  // Retrieve difficulty from location state
+  const initialDifficulty = location.state?.difficulty || 'easy'; // Default to 'medium'
+
   // Check if we have pre-configured customer profile from navigation state
   const preConfiguredProfile = location.state?.customerProfile;
   const skipConfiguration = location.state?.skipConfiguration;
@@ -81,7 +84,7 @@ const EnhancedConversation = () => {
 
   // Session configuration
   const [sessionConfig, setSessionConfig] = useState({
-    difficultyLevel: 'medium',
+    difficultyLevel: initialDifficulty, // Initialize with passed difficulty
     additionalInfo: '',
     selectedPdfs: []
   });
@@ -461,7 +464,9 @@ const EnhancedConversation = () => {
     try {
       const messageContent = transcript || chat[chat.length - 1].content;
       const response = await conversationAPI.sendMessage(conversationId, {
-        content: messageContent
+        content: messageContent,
+        difficulty: sessionConfig.difficultyLevel, // Pass difficultyLevel as 'difficulty'
+        additionalInfo: sessionConfig.additionalInfo // Pass additionalInfo
       });
 
       if (response.data.messages && response.data.messages.length > 0) {
@@ -533,8 +538,6 @@ const EnhancedConversation = () => {
       navigate('/history');
       return;
     }
-    setLoading(true);
-    setError('');
 
     try {
       // 1. First, stop any ongoing speech synthesis
@@ -610,9 +613,6 @@ const EnhancedConversation = () => {
       
     } catch (err) {
       console.error('Error ending conversation:', err);
-      const errorMessage = err.response?.data?.message || 'Failed to end session properly.';
-      setError(errorMessage);
-      toast.error(errorMessage);
       
       // Ensure everything is cleaned up even if there was an error
       if (recognitionRef.current) {
@@ -650,7 +650,6 @@ const EnhancedConversation = () => {
         replace: true 
       });
     }
-    setLoading(false);
   };
 
   // Update session context
@@ -841,7 +840,87 @@ const EnhancedConversation = () => {
                   <Button 
                     variant="outlined" 
                     color="error" 
-                    onClick={endConversation}
+                    onClick={async () => {
+                      if (!conversationId) {
+                        setError('No active conversation to end.');
+                        return;
+                      }
+
+                      setLoading(true);
+                      setError('');
+
+                      try {
+                        // Get analysis first
+                        const response = await conversationAPI.analyze(conversationId);
+                        
+                        // Parse the analysis if it's a string 
+                        const analysisData = typeof response.data.analysis === 'string' 
+                          ? JSON.parse(response.data.analysis)
+                          : response.data.analysis;
+                        
+                        // Stop any ongoing speech synthesis
+                        if ('speechSynthesis' in window) {
+                          window.speechSynthesis.cancel();
+                        }
+                        
+                        // Stop any ongoing speech recognition
+                        if (recognitionRef.current) {
+                          try {
+                            recognitionRef.current.stop();
+                          } catch (e) {
+                            console.log('Error stopping recognition:', e);
+                          }
+                          recognitionRef.current = null;
+                        }
+                        
+                        // Update state to reflect stopped state
+                        setIsSpeaking(false);
+                        setIsListening(false);
+                        setState('idle');
+                        
+                        // Clear any pending timeouts
+                        if (this.silenceTimeout) {
+                          clearTimeout(this.silenceTimeout);
+                          this.silenceTimeout = null;
+                        }
+                        
+                        // End the conversation with the server
+                        await conversationAPI.end(conversationId);
+                        
+                        // Navigate to history with analysis data
+                        navigate('/history', { 
+                          state: { 
+                            analysis: analysisData,
+                            sessionStats: response.data.sessionStats
+                          },
+                          replace: true
+                        });
+                      } catch (err) {
+                        console.error('Error ending session:', err);
+                        const errorMessage = err.response?.data?.message || 'Failed to end session properly.';
+                        setError(errorMessage);
+                        toast.error(errorMessage);
+                        setLoading(false);
+                        
+                        // Ensure clean up even on error
+                        if (recognitionRef.current) {
+                          try {
+                            recognitionRef.current.stop();
+                          } catch (e) {
+                            console.log('Error in error cleanup:', e);
+                          }
+                          recognitionRef.current = null;
+                        }
+                        
+                        if ('speechSynthesis' in window) {
+                          window.speechSynthesis.cancel();
+                        }
+                        
+                        setIsSpeaking(false);
+                        setIsListening(false);
+                        setState('idle');
+                      }
+                    }}
                     startIcon={<StopIcon />}
                     size="medium"
                     disabled={loading}
@@ -998,7 +1077,36 @@ const EnhancedConversation = () => {
                   <Button 
                     variant="outlined" 
                     color="error" 
-                    onClick={endConversation}
+                    onClick={async () => {
+                      if (!conversationId) {
+                        setError('No active conversation to end.');
+                        return;
+                      }
+
+                      setLoading(true);
+                      setError('');
+
+                      try {
+                        // Get analysis first
+                        const response = await conversationAPI.analyze(conversationId);
+                        
+                        // Then end the conversation
+                        await conversationAPI.end(conversationId);
+                        
+                        // Navigate to history with analysis data
+                        navigate('/history', { 
+                          state: { 
+                            analysis: response.data.analysis,
+                            sessionStats: response.data.sessionStats
+                          }
+                        });
+                      } catch (err) {
+                        const errorMessage = err.response?.data?.message || 'Failed to end session properly.';
+                        setError(errorMessage);
+                        toast.error(errorMessage);
+                        setLoading(false);
+                      }
+                    }}
                     startIcon={<StopIcon />}
                     size="medium"
                   >

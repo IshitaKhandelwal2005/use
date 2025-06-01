@@ -42,6 +42,15 @@ const userSchema = new mongoose.Schema({
       score: { type: Number, required: true }
     }
   ],
+  difficulty: {
+    type: String,
+    enum: ['easy', 'hard'],
+    default: 'easy'
+  },
+  level: {
+    type: Number,
+    default: 5
+  },
   createdAt: {
     type: Date,
     default: Date.now

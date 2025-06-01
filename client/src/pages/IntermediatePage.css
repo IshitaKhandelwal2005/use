@@ -7,6 +7,34 @@
   padding: 30px 20px; /* Increased overall page padding */
   position: relative; /* Needed for absolute positioning of children if any, or general layout control */
 }
+.training-content-new {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.training-column {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .training-content-new {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .previous-stage,
+  .next-stage {
+    flex: 1; /* Base size */
+    opacity: 0.5;
+  }
+
+  .current-stage {
+    flex: 1.5; /* 50% larger */
+  }
+}
+
 
 .page-header-info {
   width: 100%;

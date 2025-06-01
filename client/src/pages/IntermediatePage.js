@@ -6,6 +6,11 @@ import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import VideoGallery from '../components/VideoGallery'; // Import VideoGallery
 import { productVideoData } from '../utils/productVideoData'; // Import video data
+// Import MUI components for difficulty selection
+import { Box, Typography, ToggleButtonGroup, ToggleButton, Chip } from '@mui/material';
+import { useAuth } from '../context/AuthContext'; // Import useAuth
+import TrainingOverviewCard from '../components/TrainingOverviewCard'; // Import the new card
+import InfoCard from '../components/InfoCard';
 
 // Register Chart.js elements
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -37,16 +42,28 @@ const getScoreColor = (score) => {
 const IntermediatePage = (props) => {
   const navigate = useNavigate();
   const { scenarioId } = useParams(); // This is the product ID
+  const { user, loading: authLoading } = useAuth(); // Get user data and auth loading state
+
+  // State for difficulty selection, initialized from user profile or default
+  const [difficulty, setDifficulty] = useState('easy'); 
+  // User level, initialized from user profile or default
+  const [userLevel, setUserLevel] = useState(5); 
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      setDifficulty(user.difficulty || 'easy'); // Fallback to 'easy' if not set on user
+      setUserLevel(user.level || 5);         // Fallback to 5 if not set on user
+    }
+  }, [user]); // Re-run when user object changes
+
   const productTitle = productDetailsMap[scenarioId]?.title || 'Selected Product'; // Fallback title
   const videosForProduct = productVideoData[scenarioId] || []; // Get videos for current product
 
   const [overallPerformance, setOverallPerformance] = useState(85); // Mock performance score
-  const userLevel = 5; // Example level from image
 
   // Placeholder data for expertise and lacking areas
   const expertiseAreas = [
@@ -60,28 +77,28 @@ const IntermediatePage = (props) => {
     'Up-selling Strategies'
   ];
 
+  // Handler for changing difficulty
+  const handleDifficultyChange = (event, newDifficulty) => {
+    if (newDifficulty !== null) { // Ensure a value is always selected for ToggleButtonGroup
+      setDifficulty(newDifficulty);
+    }
+  };
+
   const handleStartTraining = () => {
-    navigate(`/enhanced-conversation/${scenarioId}`);
+    // Pass difficulty along with other state to the next page
+    navigate(`/enhanced-conversation/${scenarioId}`, {
+      state: {
+        difficulty: difficulty,
+        // You might want to pass other relevant data from this page if needed
+        // customerProfile: someProfileData, 
+        // skipConfiguration: true/false 
+      }
+    });
   };
 
   // Chart data and options (adapted from Home.js/Feedback.js)
-  const chartData = {
-    datasets: [{
-      data: [overallPerformance, 100 - overallPerformance],
-      backgroundColor: [getScoreColor(overallPerformance), '#e0e0e0'], // Adjusted default color
-      borderWidth: 0,
-      cutout: '80%', // Make donut thinner like image
-    }],
-  };
-
-  const chartOptions = {
-    plugins: {
-      legend: { display: false },
-      tooltip: { enabled: false },
-    },
-    maintainAspectRatio: false,
-    responsive: true,
-  };
+  // const chartData = { ... }; // This is now handled by TrainingOverviewCard
+  // const chartOptions = { ... }; // This is now handled by TrainingOverviewCard
 
   return (
     <div className="intermediate-page-container">
@@ -92,40 +109,60 @@ const IntermediatePage = (props) => {
 
         {/* New Training Section Layout based on image */}
         <div className="page-section training-section-new">
+          {/* training-header content (TRAINING title, LEVEL button) is removed as it's in the card now */}
+          {/* 
           <div className="training-header">
             <h1 className="training-title-main">TRAINING</h1>
             <button className="training-level-button" disabled>
-              LEVEL: {userLevel}
+              LEVEL: {authLoading ? '...' : userLevel}
             </button>
-          </div>
+          </div> 
+          */}
 
-          <div className="training-content-new">
-            <div className="training-chart-area">
-              <div className="chart-wrapper-new">
-                <Doughnut data={chartData} options={chartOptions} />
-                {/* The X on the chart is purely visual in the image, so not adding as dynamic element */}
-              </div>
-              <p className="chart-analysis-text">ANALYSIS OF PAST PERFORMANCE</p>
-            </div>
+<div className="training-content-new" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginTop: '20px' }}>
+  {/* Left card */}
+  <div className="training-column previous-stage" style={{ flex: 0.75, height: '350px', marginTop: '20px' }}>
+    {!authLoading ? (
+      <InfoCard title="PREVIOUS STAGE" level={userLevel > 1 ? userLevel - 1 : 1} difficulty={difficulty} />
+    ) : (
+      <Typography>Loading Current Stage...</Typography>
+    )}
+  </div>
 
-            <div className="training-strengths-weaknesses">
-              <h4>EXPERTIES</h4>
-              <ul>
-                {expertiseAreas.map((item, index) => <li key={`exp-${index}`}>{item}</li>)}
-              </ul>
-              <h4>AREA OF LACKING</h4>
-              <ul>
-                {lackingAreas.map((item, index) => <li key={`lack-${index}`}>{item}</li>)}
-              </ul>
-            </div>
+  {/* Middle card */}
+  <div className="training-column current-stage" style={{ flex: 2, height: '450px' }}>
+    {!authLoading ? (
+      <TrainingOverviewCard
+        title="CURRENT STAGE"
+        level={userLevel}
+        difficulty={difficulty}
+        performanceScore={overallPerformance}
+      >
+        <Box sx={{ mt: 'auto', pt: 2, width: '100%' }}>
+          <p className="ai-bot-area-title" style={{ textAlign: 'center', marginBottom: '8px' }}>
+            START WHERE YOU LEFT OF
+          </p>
+          <button onClick={handleStartTraining} className="action-button ai-training-bot-button" style={{ width: '100%' }}>
+            AI TRAINING BOT
+          </button>
+        </Box>
+      </TrainingOverviewCard>
+    ) : (
+      <Typography>Loading Current Stage...</Typography>
+    )}
+  </div>
 
-            <div className="training-ai-bot-area">
-              <p className="ai-bot-area-title">START WHERE YOU LEFT OF</p>
-              <button onClick={handleStartTraining} className="action-button ai-training-bot-button">
-                AI TRAINING BOT
-              </button>
-            </div>
-          </div>
+  {/* Right card */}
+  <div className="training-column next-stage" style={{ flex: 1, height: '350px', marginTop: '20px' }}>
+    {!authLoading ? (
+      <InfoCard title="NEXT STAGE" level={userLevel + 1} difficulty={difficulty} />
+    ) : (
+      <Typography>Loading Current Stage...</Typography>
+    )}
+  </div>
+</div>
+
+
         </div>
         {/* End of New Training Section Layout */}
 
