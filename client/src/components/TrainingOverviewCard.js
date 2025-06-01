@@ -85,14 +85,14 @@ const doughnutMarkingsPlugin = {
     ctx.fillText('Mark', textX, textY + 6);   // Line 2 (below line 1)
     // --- End "Cutoff Mark" text ---
 
-    // --- Start: Draw ACTUAL performanceScore in the center ---
-    const actualScore = options.actualPerformanceScore; // Use score from plugin options
-    if (actualScore !== undefined) {
+    // --- Start: Draw VISUAL chart percentage in the center ---
+    const chartDisplayPercentage = chart.config.data.datasets[0].data[0]; 
+    if (chartDisplayPercentage !== undefined && chartDisplayPercentage !== null) {
       ctx.font = centerPercentageFont;
       ctx.fillStyle = centerPercentageColor;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(actualScore + '%', centerX, centerY);
+      ctx.fillText(chartDisplayPercentage + '%', centerX, centerY);
     }
     // --- End: Draw percentage in the center ---
 
@@ -102,31 +102,32 @@ const doughnutMarkingsPlugin = {
 
 // Helper function to get score color (can be moved to a utils file if used elsewhere)
 const getScoreColor = (score) => {
+  if (score === null || score === undefined) return '#e0e0e0'; // Default color if score is loading/null
   if (score >= 90) return '#2E7D32'; // Dark Green
-  if (score >= 75) return '#4CAF50'; // Green // This will be the color for the 75% visual segment
+  if (score >= 75) return '#4CAF50'; // Green
   if (score >= 60) return '#FFEB3B'; // Yellow
   if (score >= 40) return '#FF9800'; // Orange
   return '#F44336'; // Red
 };
 
 const TrainingOverviewCard = ({ title, level, difficulty, performanceScore, children }) => {
-  const visualScore = 75; // Fixed visual representation
-  const chartData = performanceScore !== undefined ? {
+  // performanceScore is now the dynamic highest past score (or null if loading)
+  const chartData = performanceScore !== undefined && performanceScore !== null ? {
     datasets: [{
-      data: [visualScore, 100 - visualScore], // Always show 75% filled
-      backgroundColor: [getScoreColor(visualScore), '#e0e0e0'], // Color based on 75%
+      data: [performanceScore, 100 - performanceScore],
+      backgroundColor: [getScoreColor(performanceScore), '#e0e0e0'], // Color based on dynamic performanceScore
       borderWidth: 0,
       cutout: '80%',
     }],
-  } : null;
+  } : null; // If performanceScore is null (e.g. loading), chartData will be null
 
   const chartOptions = {
     plugins: {
       legend: { display: false },
       tooltip: { enabled: false },
-      doughnutMarkings: { // Pass the actual performanceScore to the plugin
-        actualPerformanceScore: performanceScore 
-      }
+      // doughnutMarkings: { // No longer need to pass actualPerformanceScore here
+      //   actualPerformanceScore: performanceScore 
+      // }
     },
     maintainAspectRatio: false,
     responsive: true,
@@ -167,11 +168,15 @@ const TrainingOverviewCard = ({ title, level, difficulty, performanceScore, chil
         )}
 
         {chartData && (
-          <Box sx={{ width: '120px', height: '120px', margin: '0 auto', position: 'relative', mb: 1 }}> {/* Slightly smaller chart */}
-            <Doughnut data={chartData} options={chartOptions} plugins={[doughnutMarkingsPlugin]} />
+          <Box sx={{ width: '120px', height: '120px', margin: '0 auto', position: 'relative', mb: 1 }}>
+            {chartData ? (
+              <Doughnut data={chartData} options={chartOptions} plugins={[doughnutMarkingsPlugin]} />
+            ) : (
+              <Typography variant="caption">Loading score...</Typography> 
+            )}
           </Box>
         )}
-        {performanceScore !== undefined && (
+        {(performanceScore !== undefined && performanceScore !== null) && (
           <Typography variant="caption" display="block" sx={{ color: 'text.secondary', fontWeight: 'medium' }}>
             Performance of Last Assesment
           </Typography>

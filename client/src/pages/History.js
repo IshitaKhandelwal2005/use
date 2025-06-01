@@ -270,7 +270,7 @@ const History = () => {
           <Card.Body className="text-center py-5">
             <h4>No sessions found</h4>
             <p className="text-muted">Start a new conversation to begin training!</p>
-            <Button variant="primary" onClick={() => navigate('/')}>
+            <Button variant="primary" onClick={() => navigate('/intermediate/personal-loan')}>
               Start New Session
             </Button>
           </Card.Body>

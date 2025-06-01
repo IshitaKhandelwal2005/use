@@ -48,22 +48,49 @@ const IntermediatePage = (props) => {
   const [difficulty, setDifficulty] = useState('easy'); 
   // User level, initialized from user profile or default
   const [userLevel, setUserLevel] = useState(5); 
+  const [highestPastScore, setHighestPastScore] = useState(null); // Default to null or 0
+  const [fetchingScore, setFetchingScore] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, []);
 
   useEffect(() => {
-    if (user) {
-      setDifficulty(user.difficulty || 'easy'); // Fallback to 'easy' if not set on user
-      setUserLevel(user.level || 5);         // Fallback to 5 if not set on user
+    if (user && user._id) { // Ensure user and user._id exist
+      setDifficulty(user.difficulty || 'easy'); 
+      setUserLevel(user.level || 5); 
+
+      const fetchHighestScore = async () => {
+        setFetchingScore(true);
+        try {
+          // Assuming your API is setup to be called like this
+          // And you have a way to get the auth token, e.g., from useAuth or context
+          const response = await fetch('/api/conversations/highest-score', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              // Add Authorization header if your endpoint is protected
+              // 'Authorization': `Bearer ${yourAuthToken}` 
+            },
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          setHighestPastScore(data.highestScore); // data.highestScore could be null or a number
+        } catch (error) {
+          console.error("Failed to fetch highest past score:", error);
+          setHighestPastScore(0); // Fallback to 0 in case of error, or handle appropriately
+        }
+        setFetchingScore(false);
+      };
+
+      fetchHighestScore();
     }
   }, [user]); // Re-run when user object changes
 
   const productTitle = productDetailsMap[scenarioId]?.title || 'Selected Product'; // Fallback title
   const videosForProduct = productVideoData[scenarioId] || []; // Get videos for current product
-
-  const [overallPerformance, setOverallPerformance] = useState(85); // Mock performance score
 
   // Placeholder data for expertise and lacking areas
   const expertiseAreas = [
@@ -136,7 +163,7 @@ const IntermediatePage = (props) => {
         title="CURRENT STAGE"
         level={userLevel}
         difficulty={difficulty}
-        performanceScore={overallPerformance}
+        performanceScore={fetchingScore ? null : highestPastScore} // Pass fetched score, handle loading state
       >
         <Box sx={{ mt: 'auto', pt: 2, width: '100%' }}>
           <p className="ai-bot-area-title" style={{ textAlign: 'center', marginBottom: '8px' }}>
